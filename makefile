@@ -1,12 +1,7 @@
 # Used by `image`, `push` & `deploy` targets, override as required
 IMAGE_REG ?= ghcr.io
-IMAGE_REPO ?= benc-uk/python-demoapp
+IMAGE_REPO ?= gurditsingh0711/virtualization-app
 IMAGE_TAG ?= latest
-
-# Used by `deploy` target, sets Azure webap defaults, override as required
-AZURE_RES_GROUP ?= temp-demoapps
-AZURE_REGION ?= uksouth
-AZURE_SITE_NAME ?= pythonapp-$(shell git rev-parse --short HEAD)
 
 # Used by `test-api` target
 TEST_HOST ?= localhost:5000
@@ -39,18 +34,6 @@ push:  ## 📤 Push container image to registry
 run: venv  ## 🏃 Run the server locally using Python & Flask
 	. $(SRC_DIR)/.venv/bin/activate \
 	&& python src/run.py
-
-deploy:  ## 🚀 Deploy to Azure Web App 
-	az group create --resource-group $(AZURE_RES_GROUP) --location $(AZURE_REGION) -o table
-	az deployment group create --template-file deploy/webapp.bicep \
-		--resource-group $(AZURE_RES_GROUP) \
-		--parameters webappName=$(AZURE_SITE_NAME) \
-		--parameters webappImage=$(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) -o table 
-	@echo "### 🚀 Web app deployed to https://$(AZURE_SITE_NAME).azurewebsites.net/"
-
-undeploy:  ## 💀 Remove from Azure 
-	@echo "### WARNING! Going to delete $(AZURE_RES_GROUP) 😲"
-	az group delete -n $(AZURE_RES_GROUP) -o table --no-wait
 
 test: venv  ## 🎯 Unit tests for Flask app
 	. $(SRC_DIR)/.venv/bin/activate \
